@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: sujith-collab-grid-plane-app
+    env: node
+    branch: main
+    buildCommand: "npm install && npm run build"
+    startCommand: "npm start"
+    plan: free
+    autoDeploy: true

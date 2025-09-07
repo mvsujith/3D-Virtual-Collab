@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LittlestTokyo GLTF Animation Example</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background: #000;
+      }
+      canvas {
+        display: block;
+      }
+      #info {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        color: white;
+        font-family: Arial, sans-serif;
+        background: rgba(0, 0, 0, 0.7);
+        padding: 10px;
+        border-radius: 5px;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="info">
+      <div>LittlestTokyo Animation Demo</div>
+      <div id="animationInfo">Loading...</div>
+    </div>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.158.0/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.158.0/examples/jsm/"
+        }
+      }
+    </script>
+
+    <script type="module">
+      import * as THREE from "three";
+      import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+      import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+      // Scene setup
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(
+        75,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        1000
+      );
+      const renderer = new THREE.WebGLRenderer({ antialias: true });
+
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      document.body.appendChild(renderer.domElement);
+
+      // Lighting
+      const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
+      scene.add(ambientLight);
+
+      const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+      directionalLight.position.set(5, 5, 5);
+      directionalLight.castShadow = true;
+      scene.add(directionalLight);
+
+      // Ground plane
+      const groundGeometry = new THREE.PlaneGeometry(20, 20);
+      const groundMaterial = new THREE.MeshLambertMaterial({ color: 0x999999 });
+      const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+      ground.rotation.x = -Math.PI / 2;
+      ground.receiveShadow = true;
+      scene.add(ground);
+
+      // Camera controls
+      const controls = new OrbitControls(camera, renderer.domElement);
+      camera.position.set(5, 5, 5);
+      controls.target.set(0, 0, 0);
+      controls.update();
+
+      // Animation variables
+      let mixer = null;
+      let clock = new THREE.Clock();
+      const infoDiv = document.getElementById("animationInfo");
+
+      // Load GLTF model with animations
+      const loader = new GLTFLoader();
+      loader.load(
+        "/littlest_tokyo.glb",
+        function (gltf) {
+          console.log("✅ GLTF loaded successfully:", gltf);
+
+          // Add model to scene
+          const model = gltf.scene;
+          model.scale.setScalar(0.1); // Scale down the model
+          model.traverse((child) => {
+            if (child.isMesh) {
+              child.castShadow = true;
+              child.receiveShadow = true;
+            }
+          });
+          scene.add(model);
+
+          // **STEP 1: Capture gltf.animations**
+          const animations = gltf.animations;
+          console.log("📽️ Animations found:", animations.length);
+
+          // **STEP 2: Verify animations exist (Common Pitfall Check)**
+          if (animations.length === 0) {
+            console.warn("⚠️ No animations found in the GLTF file!");
+            infoDiv.innerHTML = "No animations found in model";
+            return;
+          }
+
+          // Log animation details
+          animations.forEach((clip, index) => {
+            console.log(`Animation ${index + 1}:`, {
+              name: clip.name,
+              duration: clip.duration,
+              tracks: clip.tracks.length,
+            });
+          });
+
+          // **STEP 3: Create AnimationMixer for the loaded scene**
+          mixer = new THREE.AnimationMixer(model);
+          console.log("🎬 AnimationMixer created:", mixer); // **STEP 4: Play every clip with mixer.clipAction(clip).play()**
+          animations.forEach((clip, index) => {
+            const action = mixer.clipAction(clip);
+
+            // Configure animation properties
+            action.setLoop(THREE.LoopRepeat);
+            action.clampWhenFinished = false;
+            action.enable = true;
+            action.timeScale = 0.3; // Slow down animation to 30% speed
+
+            // Start playing
+            action.play();
+            console.log(
+              `▶️ Playing animation: "${clip.name}" at ${action.timeScale}x speed`
+            );
+          }); // Update UI
+          infoDiv.innerHTML = `
+                    <div>Animations: ${animations.length}</div>
+                    <div>Names: ${animations
+                      .map((clip) => clip.name)
+                      .join(", ")}</div>
+                    <div>Status: Playing at 0.3x speed</div>
+                `;
+
+          console.log("🎉 All animations started successfully!");
+        },
+        function (progress) {
+          console.log(
+            "Loading progress:",
+            (progress.loaded / progress.total) * 100 + "%"
+          );
+        },
+        function (error) {
+          console.error("❌ Error loading GLTF:", error);
+          infoDiv.innerHTML = "Error loading model";
+        }
+      );
+
+      // **STEP 5: Update mixer in render loop with mixer.update(delta)**
+      function animate() {
+        requestAnimationFrame(animate);
+
+        // Get delta time for smooth animation
+        const delta = clock.getDelta();
+
+        // **CRITICAL: Update the mixer - Common Pitfall if forgotten!**
+        if (mixer) {
+          mixer.update(delta);
+        }
+
+        // Update controls and render
+        controls.update();
+        renderer.render(scene, camera);
+      }
+
+      // Handle window resize
+      window.addEventListener("resize", () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+
+      // Start render loop
+      animate();
+
+      // Common Pitfalls and Debugging Tips:
+      console.log(`
+🔍 Common Pitfalls and Debugging Tips:
+
+1. **Forgetting mixer.update(delta)** - Most common issue!
+   - Without this, animations won't play even if setup correctly
+   - Must be called every frame in the render loop
+
+2. **Empty animations array** - Check gltf.animations.length
+   - Some GLTF files have no animations
+   - Use console.log to verify animations exist
+
+3. **Incorrect mixer target** - Use the correct object
+   - Usually gltf.scene, but could be a specific mesh
+   - Make sure the mixer targets the animated object
+
+4. **Animation not visible** - Check model scale/position
+   - Model might be too large/small or positioned off-screen
+   - Use controls to navigate around
+
+5. **Clock delta issues** - Use THREE.Clock for consistent timing
+   - Avoids frame rate dependent animation speed
+   - More reliable than manual deltaTime calculation
+
+6. **Multiple models** - Each needs its own mixer
+   - Don't share mixers between different GLTF models
+   - Each mixer.update() call is per-model
+
+Current setup verification:
+- ✅ GLTFLoader imported and used
+- ✅ gltf.animations captured
+- ✅ AnimationMixer created
+- ✅ All clips played with mixer.clipAction(clip).play()
+- ✅ mixer.update(delta) in render loop
+- ✅ Animation length verification
+        `);
+    </script>
+  </body>
+</html>

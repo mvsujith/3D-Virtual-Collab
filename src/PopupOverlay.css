@@ -1,0 +1,250 @@
+/* filepath: c:\M\P\grid-plane-app\src\PopupOverlay.css */
+
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.popup-overlay.visible {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.popup-container {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  width: 90%;
+  max-width: 1200px;
+  max-height: 90vh;
+  overflow: hidden;
+  transform: translateY(20px) scale(0.95);
+  transition: transform 0.3s ease-in-out;
+  position: relative;
+}
+
+.popup-overlay.visible .popup-container {
+  transform: translateY(0) scale(1);
+}
+
+.popup-header {
+  background: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  padding: 20px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.popup-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #212529;
+  margin: 0;
+}
+
+.popup-close {
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: #6c757d;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.popup-close:hover {
+  background-color: #e9ecef;
+  color: #495057;
+}
+
+.popup-body {
+  padding: 24px;
+  max-height: calc(90vh - 100px);
+  overflow-y: auto;
+}
+
+.search-section {
+  margin-bottom: 24px;
+}
+
+.search-bar {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border-color 0.2s;
+  margin-bottom: 8px;
+}
+
+.search-bar:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+.search-hint {
+  font-size: 14px;
+  color: #6c757d;
+  margin: 0;
+}
+
+.filters-section {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-width: 200px;
+}
+
+.filter-label {
+  font-weight: 500;
+  color: #495057;
+  font-size: 14px;
+}
+
+.filter-input,
+.filter-select {
+  padding: 10px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+.filter-input:focus,
+.filter-select:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 20px;
+}
+
+.card {
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 0.2s, transform 0.2s;
+  position: relative;
+  cursor: pointer;
+}
+
+.card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+}
+
+.card-badge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: #28a745;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.card-badge.idea {
+  background: #17a2b8;
+}
+.card-badge.project {
+  background: #ffc107;
+  color: #212529;
+}
+.card-badge.startup {
+  background: #dc3545;
+}
+
+.card-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #212529;
+  margin: 0 40px 8px 0;
+  line-height: 1.3;
+}
+
+.card-description {
+  font-size: 14px;
+  color: #6c757d;
+  margin: 0 0 16px 0;
+  line-height: 1.5;
+}
+
+.card-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.card-stat {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #495057;
+}
+
+.card-stat-icon {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+.card-footer {
+  padding-top: 16px;
+  border-top: 1px solid #f1f3f4;
+  font-size: 12px;
+  color: #6c757d;
+}
+
+@media (max-width: 768px) {
+  .popup-container {
+    width: 95%;
+    margin: 20px;
+  }
+
+  .filters-section {
+    flex-direction: column;
+  }
+
+  .cards-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .popup-header {
+    padding: 16px 20px;
+  }
+
+  .popup-body {
+    padding: 20px;
+  }
+}
